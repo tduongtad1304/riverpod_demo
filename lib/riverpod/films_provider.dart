@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../model.dart/films.dart';
+import '../model/films.dart';
 
 class FilmsNotifier extends StateNotifier<List<Films>> {
   FilmsNotifier() : super(Films.listFilms);

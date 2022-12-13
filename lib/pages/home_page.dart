@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:riverpod_demo/riverpod/riverpod.dart';
 
-import '../model.dart/films.dart';
+import '../model/films.dart';
 
 enum FilmType { favorite, all }
 
