@@ -10,11 +10,9 @@ environment:
 
 dependencies:
   cupertino_icons: ^1.0.2
-  dio: ^4.0.6
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.1.1
-  riverpod_annotation: ^1.0.6
   uuid: ^3.0.7
 
 dev_dependencies:
@@ -22,7 +20,6 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   flutter_test:
     sdk: flutter
-  riverpod_generator: ^1.0.6
 
 flutter:
   uses-material-design: true

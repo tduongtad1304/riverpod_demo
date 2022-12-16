@@ -1,9 +1,18 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/films.dart';
 
 class FilmsNotifier extends StateNotifier<List<Films>> {
   FilmsNotifier() : super(Films.listFilms);
+
+  void loadFilms() {
+    for (var element in Films.listFilms) {
+      state = [element, ...state];
+      state = state.toSet().toList();
+    }
+  }
 
   void toggleFavorite(String id) {
     state = state.map((film) {
@@ -12,6 +21,9 @@ class FilmsNotifier extends StateNotifier<List<Films>> {
       }
       return film;
     }).toList();
+    for (var films in state) {
+      log('${films.title} - ⭐${films.isFavorite}');
+    }
   }
 
   void addFilm(Films film) {
@@ -43,3 +55,6 @@ final filmsProvider = StateNotifierProvider<FilmsNotifier, List<Films>>((ref) {
 
 final favoriteFilmsProvider = Provider<Iterable<Films>>(
     (ref) => ref.watch(filmsProvider).where((film) => film.isFavorite));
+
+final unFavoriteFilmsProvider = Provider<Iterable<Films>>(
+    (ref) => ref.watch(filmsProvider).where((film) => !film.isFavorite));
