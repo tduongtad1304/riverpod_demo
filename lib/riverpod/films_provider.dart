@@ -1,18 +1,11 @@
-import 'dart:developer';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_demo/extension/capitalization.dart';
+import 'package:riverpod_demo/services/films_services.dart';
 
 import '../model/films.dart';
 
 class FilmsNotifier extends StateNotifier<List<Films>> {
   FilmsNotifier() : super(Films.listFilms);
-
-  void loadFilms() {
-    for (var element in Films.listFilms) {
-      state = [element, ...state];
-      state = state.toSet().toList();
-    }
-  }
 
   void toggleFavorite(String id) {
     state = state.map((film) {
@@ -21,9 +14,6 @@ class FilmsNotifier extends StateNotifier<List<Films>> {
       }
       return film;
     }).toList();
-    for (var films in state) {
-      log('${films.title} - ⭐${films.isFavorite}');
-    }
   }
 
   void addFilm(Films film) {
@@ -44,6 +34,20 @@ class FilmsNotifier extends StateNotifier<List<Films>> {
     }).toList();
   }
 
+  void searchFilm(String searchForm) {
+    state = state
+        .where((film) =>
+            film.title.contains(searchForm) ||
+            film.description.contains(searchForm) ||
+            film.title.contains(searchForm.capitalize()) ||
+            film.description.contains(searchForm.capitalize()))
+        .toList();
+
+    if (searchForm.isEmpty) {
+      state = Films.listFilms;
+    }
+  }
+
   bool isFilmExisted(String id) {
     return state.any((film) => film.id == id);
   }
@@ -58,3 +62,13 @@ final favoriteFilmsProvider = Provider<Iterable<Films>>(
 
 final unFavoriteFilmsProvider = Provider<Iterable<Films>>(
     (ref) => ref.watch(filmsProvider).where((film) => !film.isFavorite));
+
+final remoteFilmsProvider = FutureProvider((ref) {
+  return FilmsServices.getFilms();
+});
+
+final updateFilmsProvider =
+    FutureProvider.family<dynamic, Films>((ref, Films film) {
+  return FilmsServices.updateFilms(film)
+      .whenComplete(() => ref.refresh(remoteFilmsProvider));
+});

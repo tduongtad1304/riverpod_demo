@@ -2,13 +2,14 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_demo/widgets/search_bar.dart';
 import 'package:uuid/uuid.dart';
 
 import '../model/films.dart';
 import '../riverpod/riverpod.dart';
 
 class FilmsList extends ConsumerWidget {
-  final AlwaysAliveProviderBase<Iterable<Films>> provider;
+  final dynamic provider;
   const FilmsList({
     super.key,
     required this.provider,
@@ -16,75 +17,133 @@ class FilmsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final films = ref.watch(provider);
-    return ListView.separated(
-      padding: const EdgeInsets.only(top: 10),
-      itemBuilder: (context, index) {
-        final film = films.elementAt(index);
-        final isExist =
-            ref.watch(filmsProvider.notifier).isFilmExisted(film.id);
-        return Dismissible(
-          key: UniqueKey(),
-          onDismissed: (direction) =>
-              ref.read(filmsProvider.notifier).removeFilm(film.id),
-          confirmDismiss: (direction) {
-            return showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Delete Film'),
-                  content:
-                      const Text('Are you sure you want to delete this film?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('No'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('Yes'),
-                    ),
-                  ],
-                );
+    if (provider.runtimeType != FutureProvider<List<Films>>) {
+      final films = ref.watch(provider as ProviderListenable<Iterable<Films>>);
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Column(
+          children: [
+            SearchBar(
+              onSearch: (value) {
+                ref.refresh(filmsProvider.notifier).searchFilm(value);
               },
-            );
-          },
-          background: Container(
-            color: Colors.red,
-            child: const Align(
-              child: Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: Icon(
-                  Icons.delete,
-                  color: Colors.white,
-                ),
+            ),
+            Expanded(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.only(top: 10),
+                itemBuilder: (context, index) {
+                  final film = films.elementAt(index);
+                  final isExist =
+                      ref.watch(filmsProvider.notifier).isFilmExisted(film.id);
+                  return Dismissible(
+                    key: UniqueKey(),
+                    onDismissed: (direction) =>
+                        ref.read(filmsProvider.notifier).removeFilm(film.id),
+                    confirmDismiss: (direction) {
+                      return showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Delete Film'),
+                            content: const Text(
+                                'Are you sure you want to delete this film?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('No'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text('Yes'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      child: const Align(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10),
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    child: GestureDetector(
+                      onTap: () => showFilmDialog(context, ref, isExist, index),
+                      child: ListTile(
+                        title: Text(film.title),
+                        subtitle: Text(film.description),
+                        trailing: IconButton(
+                          icon: Icon(
+                            film.isFavorite ? Icons.star : Icons.star_border,
+                            color: film.isFavorite ? Colors.amber : Colors.grey,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            ref
+                                .read(filmsProvider.notifier)
+                                .toggleFavorite(film.id);
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: separatorBuilder,
+                itemCount: films.length,
               ),
             ),
-          ),
-          child: GestureDetector(
-            onTap: () => showFilmDialog(context, ref, isExist, index),
-            child: ListTile(
+          ],
+        ),
+      );
+    } else {
+      final films = ref.watch((provider as FutureProvider<List<Films>>));
+      return films.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Text('Error: $error'),
+        data: (value) => ListView.separated(
+          shrinkWrap: true,
+          padding: const EdgeInsets.only(left: 15),
+          itemBuilder: (context, index) {
+            final film = value.elementAt(index);
+            return ListTile(
               title: Text(film.title),
               subtitle: Text(film.description),
-              trailing: IconButton(
-                icon: Icon(
-                  film.isFavorite ? Icons.star : Icons.star_border,
-                  color: film.isFavorite
-                      ? const Color.fromARGB(255, 255, 238, 0)
-                      : Colors.grey,
-                  size: 30,
+              trailing: Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child: IconButton(
+                  icon: Icon(
+                    film.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: film.isFavorite
+                        ? const Color.fromARGB(255, 250, 3, 209)
+                        : Colors.grey,
+                    size: 30,
+                  ),
+                  onPressed: () {
+                    ref.read(
+                      updateFilmsProvider(
+                        film.copyWith(
+                            id: film.id, isFavorite: !film.isFavorite),
+                      ),
+                    );
+                  },
                 ),
-                onPressed: () {
-                  ref.read(filmsProvider.notifier).toggleFavorite(film.id);
-                },
               ),
-            ),
-          ),
-        );
-      },
-      separatorBuilder: separatorBuilder,
-      itemCount: films.length,
-    );
+            );
+          },
+          separatorBuilder: separatorBuilder,
+          itemCount: value.length,
+        ),
+      );
+    }
   }
 
   Widget separatorBuilder(BuildContext context, int index) {

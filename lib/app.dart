@@ -13,8 +13,8 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ref.watch(themeProvider) == ThemeData.light()
-          ? ThemeData.dark()
-          : ThemeData.light(),
+          ? ThemeData.light(useMaterial3: true)
+          : ThemeData.dark(useMaterial3: true),
       home: const HomePage(),
     );
   }
