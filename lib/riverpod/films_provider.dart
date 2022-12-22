@@ -34,17 +34,22 @@ class FilmsNotifier extends StateNotifier<List<Films>> {
     }).toList();
   }
 
-  void searchFilm(String searchForm) {
-    state = state
-        .where((film) =>
-            film.title.contains(searchForm) ||
-            film.description.contains(searchForm) ||
-            film.title.contains(searchForm.capitalize()) ||
-            film.description.contains(searchForm.capitalize()))
-        .toList();
-
-    if (searchForm.isEmpty) {
-      state = Films.listFilms;
+  void filterSearchResults(String query) {
+    List<Films> dummySearchList = [];
+    dummySearchList.addAll(state);
+    if (query.isNotEmpty) {
+      List<Films> dummyListData = [];
+      for (var item in dummySearchList) {
+        if (item.title.contains(query) ||
+            item.description.contains(query) ||
+            item.title.contains(query.capitalize()) ||
+            item.description.capitalize().contains(query.capitalize())) {
+          dummyListData.add(item);
+        }
+      }
+      state = dummyListData;
+    } else {
+      state = state;
     }
   }
 

@@ -20,18 +20,22 @@ class FilmsList extends ConsumerWidget {
     if (provider.runtimeType != FutureProvider<List<Films>>) {
       final films = ref.watch(provider as ProviderListenable<Iterable<Films>>);
       return Padding(
-        padding: const EdgeInsets.only(top: 8.0),
+        padding: const EdgeInsets.only(top: 20.0),
         child: Column(
           children: [
-            SearchBar(
-              onSearch: (value) {
-                ref.refresh(filmsProvider.notifier).searchFilm(value);
-              },
-            ),
+            provider == filmsProvider
+                ? SearchBar(
+                    onSearch: (value) {
+                      ref
+                          .refresh(filmsProvider.notifier)
+                          .filterSearchResults(value);
+                    },
+                  )
+                : const SizedBox.shrink(),
             Expanded(
               child: ListView.separated(
                 shrinkWrap: true,
-                padding: const EdgeInsets.only(top: 10),
+                padding: const EdgeInsets.only(top: 5),
                 itemBuilder: (context, index) {
                   final film = films.elementAt(index);
                   final isExist =
@@ -76,6 +80,18 @@ class FilmsList extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    secondaryBackground: Container(
+                      color: Colors.amber,
+                      child: const Align(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10),
+                          child: Icon(
+                            Icons.star,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                     child: GestureDetector(
                       onTap: () => showFilmDialog(context, ref, isExist, index),
                       child: ListTile(
@@ -107,8 +123,21 @@ class FilmsList extends ConsumerWidget {
     } else {
       final films = ref.watch((provider as FutureProvider<List<Films>>));
       return films.when(
+        skipLoadingOnRefresh: films.asData?.value.isNotEmpty ?? false,
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Text('Error: $error'),
+        error: (dynamic error, stackTrace) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(error, style: Theme.of(context).textTheme.bodyLarge),
+              TextButton(
+                onPressed: () => ref.refresh(remoteFilmsProvider.future),
+                child: const Text('Try again'),
+              )
+            ],
+          ),
+        ),
         data: (value) => ListView.separated(
           shrinkWrap: true,
           padding: const EdgeInsets.only(left: 15),

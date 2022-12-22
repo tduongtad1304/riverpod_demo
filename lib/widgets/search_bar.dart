@@ -26,7 +26,7 @@ class _SearchBarState extends State<SearchBar> {
   Widget build(BuildContext context) {
     return Container(
       height: 50,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(10),
@@ -34,6 +34,8 @@ class _SearchBarState extends State<SearchBar> {
       child: TextFormField(
         controller: textController,
         decoration: InputDecoration(
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
           suffixIcon: textController.text.isNotEmpty
               ? IconButton(
                   icon:
