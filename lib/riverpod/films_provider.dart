@@ -73,7 +73,7 @@ final remoteFilmsProvider = FutureProvider((ref) {
 });
 
 final updateFilmsProvider =
-    FutureProvider.family<dynamic, Films>((ref, Films film) {
+    FutureProvider.family<Films, Films>((ref, Films film) {
   return FilmsServices.updateFilms(film)
       .whenComplete(() => ref.refresh(remoteFilmsProvider));
 });

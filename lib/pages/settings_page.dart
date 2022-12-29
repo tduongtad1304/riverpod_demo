@@ -8,7 +8,6 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var theme = ref.watch(themeProvider) == ThemeData.dark();
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Padding(
@@ -19,10 +18,15 @@ class SettingsPage extends ConsumerWidget {
             const Spacer(),
             const Text('Light'),
             const SizedBox(width: 3),
-            CupertinoSwitch(
-              value: theme,
-              onChanged: (value) =>
-                  ref.read(themeProvider.notifier).toggleTheme(value),
+            Consumer(
+              builder: (context, ref, __) {
+                final theme = ref.watch(themeProvider) == ThemeData.dark();
+                return CupertinoSwitch(
+                  value: theme,
+                  onChanged: (value) =>
+                      ref.read(themeProvider.notifier).toggleTheme(value),
+                );
+              },
             ),
             const SizedBox(width: 3),
             const Text('Dark')

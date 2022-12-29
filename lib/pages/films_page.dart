@@ -15,7 +15,6 @@ class FilmsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var theme = ref.watch(themeProvider) == ThemeData.light();
     List<AlwaysAliveProviderBase<Iterable<Films>>> listProvider = [
       filmsProvider,
       favoriteFilmsProvider,
@@ -33,7 +32,9 @@ class FilmsPage extends ConsumerWidget {
                   FilmType.values[value];
             },
             indicatorWeight: 4,
-            labelColor: theme ? Colors.black : Colors.white,
+            labelColor: ref.watch(themeProvider) == ThemeData.light()
+                ? Colors.black
+                : Colors.white,
             labelStyle: Theme.of(context).textTheme.titleMedium,
             tabs: FilmType.values
                 .map(

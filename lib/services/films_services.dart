@@ -25,7 +25,7 @@ class FilmsServices {
     }
   }
 
-  static Future<dynamic> updateFilms(Films film) async {
+  static Future<Films> updateFilms(Films film) async {
     Dio dio = Dio();
     String url = 'http://10.0.2.2:3000/films/${film.id}';
 
